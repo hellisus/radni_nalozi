@@ -1,0 +1,65 @@
+.btn-floating{
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select:none;
+    user-select:none;
+    -o-user-select:none;
+}
+
+.material-icons{
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select:none;
+    user-select:none;
+    -o-user-select:none;
+}
+
+td input{
+    font-style: oblique;
+    text-align: center;
+}
+
+label{
+    font-size: 1.5rem;
+}
+
+.first_in_content{
+    padding-top: 15rem !important;
+}
+
+body{
+    background-image: url("bg.jpg");
+    background-size:cover;
+}
+
+.divider_h{
+    display: block;
+    width: 15px;
+}
+
+.sekcija{
+    font-weight: 500;
+}
+
+.nalog{
+    font-weight: 500;
+}
+.main_content{
+    padding-top: 0.5rem;
+}
+
+@media screen and (max-width: 900px) {
+    .logo_slika{
+       visibility: hidden;
+    }
+}
+
+#map {
+    height: 300px;
+    width: 300px;
+    position: absolute;
+}
+
+h3{
+    font-variant: small-caps !important;
+}
