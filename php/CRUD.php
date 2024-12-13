@@ -11,7 +11,7 @@ class CRUD extends PDO
 	public $table = null;
 
 	// Konstruktor: kreira konekciju sa bazom podataka
-	public function __construct($db_type = 'mysql', $db_name = 'srnalozi_glavna', $db_host = '127.0.0.1', $db_user = 'root', $db_pword = '', $db_charset = 'UTF8')
+	public function __construct($db_type = 'mysql', $db_name = 'unisell', $db_host = '127.0.0.1', $db_user = 'root', $db_pword = '', $db_charset = 'UTF8')
 	{
 		try {
 			$dsn = "$db_type:dbname=$db_name;host=$db_host;charset=$db_charset";
