@@ -2,6 +2,8 @@
 require 'php/config.php';
 ?>
 
+//indeks stranica
+
 <!DOCTYPE html>
 <html lang="RS">
 
