@@ -2,7 +2,7 @@
 require 'php/config.php';
 ?>
 
-//indeks stranica
+//indeks stranica izmena
 
 <!DOCTYPE html>
 <html lang="RS">
