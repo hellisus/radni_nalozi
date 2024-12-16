@@ -1,162 +1,161 @@
 <?php
 /**
- * Klasa za obavljanje osnovnih CRUD operacija u bazi podataka
+ * Created by PhpStorm.
+ * User: Josip
+ * Date: 13.8.2017.
+ * Time: 13.22
+ *
  * @usage
  * $crud = new CRUD();
  */
 
 class CRUD extends PDO
 {
-	// Izabrana tabela koja se koristi za upite
+	//Tabela koja se koristi
 	public $table = null;
 
-	// Konstruktor: kreira konekciju sa bazom podataka
-	public function __construct($db_type = 'mysql', $db_name = 'unisell', $db_host = '127.0.0.1', $db_user = 'root', $db_pword = '', $db_charset = 'UTF8')
+	public function __construct($db_type ='mysql', $db_name = 'unisell', $db_host= '127.0.0.1', $db_user= 'root', $db_pword = '', $db_charset = 'UTF8')
 	{
 		try {
 			$dsn = "$db_type:dbname=$db_name;host=$db_host;charset=$db_charset";
-			parent::__construct($dsn, $db_user, $db_pword);
-			$this->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION); // Postavlja način rukovanja greškama
-			$this->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC); // Postavlja podrazumevani način dohvatanja podataka
-		} catch (PDOException $e) {
-			die('Greška u konekciji sa bazom podataka : ' . $e->getMessage());
+			parent::__construct($dsn,$db_user,$db_pword);
+			$this->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+			$this->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+		}
+		catch (PDOException $e) {
+			die('Greška u konekciji sa bazom podataka : ' . $e->getMessage()) ;
 		}
 	}
+//---------------------------------------------------------------------------------------------------------------------
 
 	/**
 	 * Selektuje podatke iz baze
-	 * 
-	 * @param string|array $columns Kolone koje treba selektovati
-	 * @param string|array|null $where Uslov za selektovanje podataka
-	 * @param string $custom Poseban upit ako je definisan
-	 * @return array Vraća niz rezultata
+	 * @param $columns Mixed Str or Array
+	 * @param $where  Mixed Int or Array
+	 * @param string $custom replace the query with the custom one
+	 * @return array
 	 */
-	public function select($columns, $where = null, $custom = '')
-	{
+
+	public function select($columns, $where = null, $custom = ''){
 		$this->_isTableSet();
 
-		if (is_array($columns)) {
-			$columns = implode(',', $columns); // Pretvara niz kolona u string
+		if (is_array($columns))
+		{
+			$columns = implode(',', $columns);
 		}
 
-		// Izgradnja WHERE dela upita
+		//izgradnja WHERE metodom where
 		$where_stmt = $this->_whereBuilder($where);
 
 		$sth = $this->prepare("SELECT $columns FROM `{$this->table}`  $where_stmt");
 
-		// Ako je definisan poseban upit, koristi ga
-		if ($custom != '') {
+		if ($custom != ''){
 			$sth = $this->prepare($custom);
 		}
 
 		$sth->execute($where);
 		return $sth->fetchAll(PDO::FETCH_ASSOC);
+
 	}
+//---------------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Ubacuje nove podatke u bazu
-	 * 
-	 * @param array $data Asocijativni niz [kolona => vrednost]
-	 * @return bool|string Vraća ID poslednjeg unosa ili false
+	 * Ubacuje podatke u bazu
+	 * @param  array $data Mora biti asoc Array [kolona => vrednost]
+	 * @return bool/string vraća zadnji primarni ključ ili false
 	 */
-	public function insert($data)
-	{
+	public function insert($data){
 		$this->_isTableSet();
 
 		$keys_array = array_keys($data);
-		$keys = "`" . implode('`, `', $keys_array) . "`";
-		$params = ":" . implode(', :', $keys_array);
+		$keys       = "`" . implode('`, `', $keys_array) . "`";
+		$params     = ":" . implode(', :', $keys_array);
 
 		$sth = $this->prepare("INSERT INTO `{$this->table}` ($keys) VALUES($params)");
-		$result = $sth->execute($data);
+		$result =  $sth->execute($data);
 
-		if ($result == 1) {
-			return $this->lastInsertId(); // Vraća ID poslednjeg unosa
+		if($result == 1){
+			return $this->lastInsertId();
 		}
 		return false;
 	}
 
+//---------------------------------------------------------------------------------------------------------------------
+
 	/**
-	 * Ažurira postojeće podatke u bazi
-	 * 
-	 * @param array $data Asocijativni niz [kolona => vrednost]
-	 * @param mixed $where Uslov za ažuriranje (array ili ID)
-	 * @param bool $log Ažurira samo poslednji ID ako je true
+	 * Menja podatke u bazi
+	 * @param array $data Mora biti asoc Array [kolona => vrednost]
+	 * @param mixed $where je arej ili numerički primarni ključ
+	 * @param bool $log menja samo poslednji id
 	 */
-	public function update($data, $where, $log = false)
-	{
+	public function update($data, $where, $log = false){
 		$this->_isTableSet();
 
-		$set = '';
-		foreach ($data as $_key => $_value) {
+		$set='';
+		foreach ($data as $_key => $_value){
 			$set .= "`$_key` = :$_key,";
 		}
-		$set = rtrim($set, ","); // Uklanja poslednji zarez
+		$set = rtrim($set, ",");
 
-		// Izgradnja WHERE dela upita
+		//izgradnja WHERE metodom where
 		$where_stmt = $this->_whereBuilder($where);
 
 		$data = array_merge($data, $where);
 
-		if ($log == true) {
+		if ($log == true){
 			$sth = $this->prepare("UPDATE `{$this->table}` SET $set $where_stmt ORDER BY {$this->table}_id DESC LIMIT 1;");
-		} else {
+		}else{
 			$sth = $this->prepare("UPDATE `{$this->table}` SET $set $where_stmt");
 		}
 
 		$sth->execute($data);
 	}
+//---------------------------------------------------------------------------------------------------------------------
 
 	/**
-	 * Briše podatke iz baze na osnovu uslova
-	 * 
-	 * @param array $where Uslov za brisanje
+	 * Brisanje podataka gde $where
+	 * @param array $where
 	 */
 	public function delete($where)
 	{
 		$this->_isTableSet();
 
-		// Izgradnja WHERE dela upita
+		//izgradnja WHERE metodom where
 		$where_stmt = $this->_whereBuilder($where);
 
 		$sth = $this->prepare("DELETE FROM `{$this->table}` $where_stmt");
 		$sth->execute($where);
 	}
+//---------------------------------------------------------------------------------------------------------------------
 
-	/**
-	 * Privatna metoda za izgradnju WHERE dela upita
-	 * 
-	 * @param mixed $where Uslov za WHERE deo upita (array ili ID)
-	 * @return string Generisani WHERE deo upita
-	 */
-	private function _whereBuilder($where)
+private function _whereBuilder($where)
+{
+	$where_stmt = null;
+	if (is_numeric($where))
 	{
-		$where_stmt = null;
-		if (is_numeric($where)) {
-			// Ako je prosleđen ID kao uslov
-			$primary = $this->table . '_id';
-			$where_stmt = "WHERE `$primary` = :primary_key";
-			$where = [
-				'primary_key' => $where
-			];
-		} elseif (is_array($where)) {
-			// Ako je prosleđen niz kao uslov
-			$where_stmt = '';
-			foreach ($where as $_key => $_value) {
-				$where_stmt .= "`$_key` = :$_key AND ";
-			}
-			$where_stmt = "WHERE " . rtrim($where_stmt, ' AND ');
-		}
-
-		return $where_stmt;
+		$primary = $this->table . '_id';
+		$where_stmt = "WHERE `$primary` = :primary_key";
+		$where = [
+			'primary_key' => $where
+		];
 	}
 
-	/**
-	 * Privatna metoda za proveru da li je tabela postavljena
-	 */
-	private function _isTableSet()
+	elseif (is_array($where))
 	{
-		if ($this->table == null) {
+		$where_stmt = '';
+		foreach ($where as $_key => $_value)
+		{
+			$where_stmt .= "`$_key` = :$_key AND ";
+		}
+		$where_stmt = "WHERE " . rtrim($where_stmt, ' AND ');
+	}
+
+	return $where_stmt;
+}
+
+//---------------------------------------------------------------------------------------------------------------------
+	private function _isTableSet(){
+		if($this->table == null){
 			die('Morate odabrati tabelu! Tabela nije izabrana!');
 		}
 	}
