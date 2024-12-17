@@ -1,4 +1,13 @@
 <?php
+
+/**
+ * Created by Visual studio.
+ * User: Josip
+ * Date: 20.03.2023
+ * Time: 18:16
+ */
+
+
 require 'CRUD.php';
 require 'EmailMessage.php';
 
@@ -8,7 +17,7 @@ $nalozi->table = "nalozi";
 $mbox = imap_open("{mail.srnalozi.com:993/imap/ssl/novalidate-cert}INBOX", "nalozi_glavni@srnalozi.com", "Icxchll3344!!*");
 $numMessages = imap_num_msg($mbox);
 if ($numMessages != 0) {
-    echo 'ima poruka ' . $numMessages . "<br/>";
+    echo 'ima poruka ' . $numMessages . "<br/>";  // Broj poruka u inboksu
 
     function get_between_data($input_str, $start, $end)
     {
@@ -36,8 +45,7 @@ if ($numMessages != 0) {
 
                 // Nađi broj naloga
                 $šta_je_našao = trim($matches[0]);
-                $br_naloga = substr($šta_je_našao, -8);
-                ;
+                $br_naloga = substr($šta_je_našao, -8);;
                 echo $br_naloga . "<br/>";
 
                 $emailMessage = new EmailMessage($mbox, $msgno);
@@ -46,7 +54,7 @@ if ($numMessages != 0) {
                 $subject = $emailMessage->bodyHTML;
 
                 echo "<hr>";
-                $html_markap = array('</td>', '<td>', '<tr>', '</tr>', '<br>', '</tbody>', '</table>', '</div>', '<div>');
+                $html_markap = array('</td>', '<td>', '<tr>', '</tr>', '<br>','</tbody>','</table>', '</div>', '<div>');
                 $html_markap_r = array('', '', '', '', '', '', '', '', '');
                 $subject = str_replace($html_markap, $html_markap_r, $subject);
                 echo $subject;
@@ -91,8 +99,8 @@ if ($numMessages != 0) {
                 // Nađi napomenu
                 $napomena = trim(get_between_data($subject, 'Opis reklamacije:', 'Opis projekta:'));
                 $napomena2 = trim(get_between_data($subject, 'Opis projekta:', 'Nalog ID:'));
-                if ($napomena != $napomena2) {
-                    if ($napomena2 != '/') {
+                if($napomena != $napomena2){
+                    if($napomena2 != '/'){
                         $napomena = $napomena . " " . $napomena2;
                     }
                 }
@@ -152,7 +160,7 @@ if ($numMessages != 0) {
                 $subject = $emailMessage->bodyHTML;
 
                 echo "<hr>";
-                $html_markap = array('</td>', '<td>', '<tr>', '</tr>', '<br>', '</tbody>', '</table>', '</div>', '<div>');
+                $html_markap = array('</td>', '<td>', '<tr>', '</tr>', '<br>','</tbody>','</table>', '</div>', '<div>');
                 $html_markap_r = array('', '', '', '', '', '', '', '', '');
                 $subject = str_replace($html_markap, $html_markap_r, $subject);
                 echo $subject;
@@ -170,7 +178,7 @@ if ($numMessages != 0) {
 
                 // Nađi tip naloga
 
-                $tip_naloga = trim(trim(get_between_data($subject, 'Tip naloga:', 'CRM nalog:'), '.'));
+                $tip_naloga =  trim(trim(get_between_data($subject, 'Tip naloga:', 'CRM nalog:'), '.'));
                 if ($tip_naloga == "") {
                     $tip_naloga = "NEPOZNATO";
                 }
@@ -197,7 +205,7 @@ if ($numMessages != 0) {
                 // Nađi napomenu
                 $napomena = trim(trim(get_between_data($subject, 'Opis reklamacije:', '=========================')));
                 $napomena2 = trim(trim(get_between_data($subject, 'Opis projekta:', '=========================')));
-                if ($napomena != $napomena2) {
+                if($napomena != $napomena2){
                     $napomena = $napomena . " " . $napomena2;
                 }
                 echo $napomena . "<br/>";
